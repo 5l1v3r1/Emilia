@@ -8,4 +8,5 @@ import (
 
 func (m Commands) Ping(ds *discordgo.Session, dm *discordgo.Message) {
 	fmt.Println("Test")
+	ds.ChannelMessageSend(dm.ChannelID, "Pong")
 }

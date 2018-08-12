@@ -28,12 +28,12 @@ func New() *Commands {
 }
 
 // messages -> commands
-func (c *Commands) OnMessageC(s *discordgo.Session, m *discordgo.MessageCreate) {
-	msg := m.Message
+func (c *Commands) OnMessageC(s *discordgo.Session, mc *discordgo.MessageCreate) {
+	msg := mc.Message
 	content := msg.Content
 	prefix := c.Prefix
 
-	if m.Author.ID == s.State.User.ID {
+	if mc.Author.ID == s.State.User.ID {
 		return
 	}
 
@@ -42,14 +42,24 @@ func (c *Commands) OnMessageC(s *discordgo.Session, m *discordgo.MessageCreate) 
 		guild, _ := s.Guild(channel.GuildID)
 		author := msg.Author
 
+		// Trim prefix
+		content = strings.TrimPrefix(content, prefix)
+		fields := strings.Fields(content)
+		//	fmt.Println(fields)
 		_ = guild
 		_ = author
 
-		fmt.Println("Prefix filter")
+		for fk, fv := range fields {
+			fmt.Println(fk, fv)
+			for _, rv := range c.Routes {
+				if rv.Cmd == fv {
+					rv.Run(s, mc.Message)
+				}
+				//	fmt.Println("Range - Routes")
+				//fmt.Println(*rv)
+				//
 
-		for _, rv := range c.Routes {
-			fmt.Println("Range - Routes")
-			fmt.Println(rv)
+			}
 
 		}
 
