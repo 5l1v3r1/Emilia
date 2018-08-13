@@ -7,13 +7,15 @@ import (
 	"syscall"
 
 	"github.com/mxrk/Emilia/discord/cmds"
+	"github.com/mxrk/Emilia/discord/cmds/games"
 
 	"github.com/bwmarrin/discordgo"
 )
 
 func main() {
 	var Router = cmds.New()
-	Router.RegisterCommand("ping", Router.Ping)
+	Router.RegisterCommand("ping", cmds.Ping)
+	Router.RegisterCommand("rsp", games.Rsp)
 
 	dg, err := discordgo.New("Bot " + os.Getenv("goDiscord"))
 	if err != nil {
