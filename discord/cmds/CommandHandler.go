@@ -1,7 +1,6 @@
 package cmds
 
 import (
-	"fmt"
 	"strings"
 
 	"github.com/bwmarrin/discordgo"
@@ -18,7 +17,7 @@ type Commands struct {
 }
 
 // handler signature
-type HandlerFunc func(*discordgo.Session, *discordgo.Message)
+type HandlerFunc func(*discordgo.Session, *discordgo.Message, []string)
 
 // create route
 func New() *Commands {
@@ -44,22 +43,28 @@ func (c *Commands) OnMessageC(s *discordgo.Session, mc *discordgo.MessageCreate)
 
 		// Trim prefix
 		content = strings.TrimPrefix(content, prefix)
-		fields := strings.Fields(content)
+		//fields := strings.Fields(content)
+		//fmt.Println("3:", fields)
 		//	fmt.Println(fields)
 		_ = guild
 		_ = author
 
-		for fk, fv := range fields {
-			fmt.Println(fk, fv)
-			for _, rv := range c.Routes {
-				if rv.Cmd == fv {
-					rv.Run(s, mc.Message)
-				}
-				//	fmt.Println("Range - Routes")
-				//fmt.Println(*rv)
-				//
+		//	content = fields[0][len(prefix):]
+		split := strings.Split(content, " ")
+		cmd := split[0]
+		args := split[1:]
 
+		// for _, fv := range fields {
+		// 	fmt.Println(fk, fv)
+		for _, rv := range c.Routes {
+			if rv.Cmd == cmd {
+				rv.Run(s, mc.Message, args)
 			}
+			//	fmt.Println("Range - Routes")
+			//fmt.Println(*rv)
+			//
+
+			//}
 
 		}
 
