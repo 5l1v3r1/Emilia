@@ -8,10 +8,10 @@ import (
 	"github.com/bwmarrin/discordgo"
 )
 
-//Rsp game
-func Rsp(ds *discordgo.Session, dm *discordgo.Message, args []string) {
+//Rps game
+func Rps(ds *discordgo.Session, dm *discordgo.Message, args []string) {
 	fmt.Println("args: ", args)
-	answers := []string{"rock", "scissors", "paper"}
+	answers := []string{"rock", "paper", "scissors"}
 
 	n := rand.Intn(3)
 	PlayerChoice := args[0]
