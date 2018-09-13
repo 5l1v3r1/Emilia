@@ -80,10 +80,8 @@ func CheckUser(userid, username string) {
 	var id string
 	result := db.QueryRow("SELECT userid from users where userid = $1", userid).Scan(&id)
 	if result == sql.ErrNoRows {
-		fmt.Println("Found no user")
 		CreateUser(userid, username)
 	} else {
-		fmt.Println("Found user")
 		UpdateUserXP(userid)
 	}
 }
@@ -93,7 +91,13 @@ func Level() {
 
 }
 
-//ToDo
-func ReturnXP() int {
-	return -1
+func ReturnXP(userid string) string {
+	var xp string
+	result := db.QueryRow("SELECT xp from users where userid = $1", userid).Scan(&xp)
+	if result == sql.ErrNoRows {
+		fmt.Println("Found no user")
+	} else {
+		return xp
+	}
+	return ""
 }

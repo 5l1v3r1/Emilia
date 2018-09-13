@@ -16,6 +16,7 @@ func main() {
 	var Router = cmds.New()
 	Router.RegisterCommand("ping", cmds.Ping)
 	Router.RegisterCommand("rps", games.Rps)
+	Router.RegisterCommand("getxp", cmds.GetXP)
 
 	dg, err := discordgo.New("Bot " + os.Getenv("goDiscord"))
 	if err != nil {
