@@ -108,9 +108,15 @@ func Level() {
 		}
 		//example level
 		if xp > 0 && xp < 10 {
-			_ = db.QueryRow("UPDATE users SET level = 1 WHERE userid = $1", userid)
+			_, err = db.Exec("UPDATE users SET level = 1 WHERE userid = $1", userid)
+			if err != nil {
+				log.Fatal(err)
+			}
 		} else if xp > 10 && xp < 20 {
-			_ = db.QueryRow("UPDATE users SET level = 2 WHERE userid = $1", userid)
+			_, err = db.Exec("UPDATE users SET level = 2 WHERE userid = $1", userid)
+			if err != nil {
+				log.Fatal(err)
+			}
 		}
 	}
 	elapsed := time.Since(start)
