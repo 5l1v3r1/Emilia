@@ -3,7 +3,9 @@ package database
 import (
 	"database/sql"
 	"fmt"
+	"log"
 	"os"
+	"time"
 
 	_ "github.com/lib/pq"
 )
@@ -36,7 +38,8 @@ func init() {
 	}
 
 	sqlStatement := `CREATE TABLE IF NOT EXISTS users (
-		userid text, 
+		id SERIAL,
+		userid text,
 		username text,
 		xp int,
 		level int,
@@ -46,7 +49,7 @@ func init() {
 	if err != nil {
 		panic(err)
 	}
-
+	Level()
 }
 
 // CreateUser ...
@@ -88,7 +91,32 @@ func CheckUser(userid, username string) {
 
 //ToDo
 func Level() {
-
+	start := time.Now()
+	var (
+		userid string
+		xp     int
+	)
+	rows, err := db.Query("SELECT userid, xp from users")
+	if err != nil {
+		log.Fatal(err)
+	}
+	defer rows.Close()
+	for rows.Next() {
+		err := rows.Scan(&userid, &xp)
+		if err != nil {
+			log.Fatal(err)
+		}
+		//example level
+		if xp > 0 && xp < 10 {
+			_ = db.QueryRow("UPDATE users SET level = 1 WHERE userid = $1", userid)
+		} else if xp > 10 && xp < 20 {
+			_ = db.QueryRow("UPDATE users SET level = 2 WHERE userid = $1", userid)
+		}
+	}
+	elapsed := time.Since(start)
+	log.Printf("Level update took %s", elapsed)
+	// update every 60 seconds
+	time.AfterFunc(time.Second*60, Level)
 }
 
 func ReturnXP(userid string) string {
