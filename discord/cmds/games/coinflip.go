@@ -10,6 +10,10 @@ import (
 func Coinflip(ds *discordgo.Session, dm *discordgo.Message, args []string) {
 	answers := []string{"heads", "tails"}
 	n := rand.Intn(2)
+	if len(args) == 0 {
+		ds.ChannelMessageSend(dm.ChannelID, "Tails or Heads?")
+		return
+	}
 	PlayerChoice := args[0]
 	PlayerChoice = strings.ToLower(PlayerChoice)
 	if PlayerChoice == "tails" || PlayerChoice == "heads" {
