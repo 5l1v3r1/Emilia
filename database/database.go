@@ -7,6 +7,7 @@ import (
 	"os"
 	"time"
 
+	// Postgres import
 	_ "github.com/lib/pq"
 )
 
@@ -49,6 +50,17 @@ func init() {
 	if err != nil {
 		panic(err)
 	}
+	sqlStatement = `CREATE TABLE IF NOT EXISTS games (
+		id SERIAL,
+		name text,
+		count int,
+		PRIMARY KEY (name)  
+	  )`
+	_, err = db.Exec(sqlStatement)
+	if err != nil {
+		panic(err)
+	}
+
 	Level()
 }
 
@@ -75,7 +87,6 @@ func UpdateUserXP(userid string) {
 	if err != nil {
 		panic(err)
 	}
-	fmt.Println("Update user")
 }
 
 // CheckUser ...
@@ -89,7 +100,7 @@ func CheckUser(userid, username string) {
 	}
 }
 
-//ToDo
+//Level updates the level from every user automatically
 func Level() {
 	start := time.Now()
 	var (
@@ -125,6 +136,7 @@ func Level() {
 	time.AfterFunc(time.Second*60, Level)
 }
 
+// ReturnXP returns the current xp of the specific userid
 func ReturnXP(userid string) string {
 	var xp string
 	result := db.QueryRow("SELECT xp from users where userid = $1", userid).Scan(&xp)
@@ -134,4 +146,20 @@ func ReturnXP(userid string) string {
 		return xp
 	}
 	return ""
+}
+
+// AddGame ...
+func AddGame(name ...string) {
+	for _, k := range name {
+		sqlStatement := `
+		INSERT INTO games 
+		(name, count)
+		VALUES ($1, $2)`
+		_, err := db.Exec(sqlStatement, k, 0)
+		if err != nil {
+			fmt.Println(err)
+		}
+		fmt.Printf("Launching game: %v \n", k)
+	}
+
 }

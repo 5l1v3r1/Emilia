@@ -6,6 +6,7 @@ import (
 	"os/signal"
 	"syscall"
 
+	"github.com/mxrk/Emilia/database"
 	"github.com/mxrk/Emilia/discord/cmds"
 	"github.com/mxrk/Emilia/discord/cmds/games"
 
@@ -17,6 +18,9 @@ func main() {
 	Router.RegisterCommand("ping", cmds.Ping)
 	Router.RegisterCommand("rps", games.Rps)
 	Router.RegisterCommand("getxp", cmds.GetXP)
+	Router.RegisterCommand("coinflip", games.Coinflip)
+
+	database.AddGame("rps", "coinflip")
 
 	dg, err := discordgo.New("Bot " + os.Getenv("goDiscord"))
 	if err != nil {
