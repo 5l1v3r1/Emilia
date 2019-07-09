@@ -8,13 +8,17 @@ import (
 
 	"github.com/mxrk/Emilia/database"
 	"github.com/mxrk/Emilia/discord/cmds"
+	"github.com/mxrk/Emilia/discord/cmds/fun"
 	"github.com/mxrk/Emilia/discord/cmds/games"
+	"github.com/mxrk/Emilia/discord/cmds/utils"
 
 	"github.com/bwmarrin/discordgo"
 )
 
 func main() {
 	var Router = cmds.New()
+	Router.RegisterCommand("reverse", fun.Reverse)
+	Router.RegisterCommand("choose", utils.Choose)
 	Router.RegisterCommand("ping", cmds.Ping)
 	Router.RegisterCommand("rps", games.Rps)
 	Router.RegisterCommand("getxp", cmds.GetXP)
