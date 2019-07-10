@@ -1,7 +1,6 @@
 package main
 
 import (
-	"fmt"
 	"time"
 
 	"github.com/bwmarrin/discordgo"
@@ -11,7 +10,6 @@ import (
 //Loop is a function to delete empty date channels
 func Loop(ds *discordgo.Session) {
 	for {
-		fmt.Println(len(utils.ChannelIDS))
 		for _, guild := range ds.State.Guilds {
 			//channels, _ := ds.GuildChannels(guild.ID)
 			voiceStates := guild.VoiceStates

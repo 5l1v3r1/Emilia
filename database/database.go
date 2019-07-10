@@ -61,7 +61,7 @@ func init() {
 		panic(err)
 	}
 
-	Level()
+	go Level()
 }
 
 // CreateUser ...
@@ -148,6 +148,17 @@ func ReturnXP(userid string) string {
 	return ""
 }
 
+func GetLevel(userid string) string {
+	var level string
+	result := db.QueryRow("SELECT level from users where userid = $1", userid).Scan(&level)
+	if result == sql.ErrNoRows {
+		fmt.Println("Found no user")
+	} else {
+		return level
+	}
+	return ""
+}
+
 // AddGame ...
 func AddGame(name ...string) {
 	for _, k := range name {
@@ -161,5 +172,4 @@ func AddGame(name ...string) {
 		}
 		fmt.Printf("Launching game: %v \n", k)
 	}
-
 }
