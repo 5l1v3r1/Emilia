@@ -19,6 +19,8 @@ func main() {
 	var Router = cmds.New()
 	Router.RegisterCommand("reverse", fun.Reverse)
 	Router.RegisterCommand("choose", utils.Choose)
+	Router.RegisterCommand("urban", fun.Urban)
+	Router.RegisterCommand("date", utils.Date)
 	Router.RegisterCommand("ping", cmds.Ping)
 	Router.RegisterCommand("rps", games.Rps)
 	Router.RegisterCommand("getxp", cmds.GetXP)
@@ -35,7 +37,8 @@ func main() {
 		fmt.Println("error opening connection,", err)
 		return
 	}
-
+	go Loop(dg)
+	//ids = make([]int, 0, 0)
 	// CommandHandler
 	dg.AddHandler(Router.OnMessageC)
 	// MessageHandler
