@@ -25,6 +25,7 @@ func main() {
 	Router.RegisterCommand("rps", games.Rps)
 	Router.RegisterCommand("getxp", cmds.GetXP)
 	Router.RegisterCommand("lvl", cmds.GetLevel)
+	Router.RegisterCommand("coins", cmds.GetCoins)
 
 	Router.RegisterCommand("coinflip", games.Coinflip)
 

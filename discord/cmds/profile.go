@@ -29,3 +29,21 @@ func GetLevel(ds *discordgo.Session, dm *discordgo.Message, content []string) {
 	}
 	ds.ChannelMessageSend(dm.ChannelID, ret)
 }
+
+//GetCoins returns the level of the current user or first mentioned user
+func GetCoins(ds *discordgo.Session, dm *discordgo.Message, content []string) {
+	user := dm.Mentions
+	var ret string
+	if len(user) == 0 {
+		ret = fmt.Sprintf("You have %v coins!", database.GetCoins(dm.Author.ID))
+	} else {
+		coins := database.GetCoins(user[0].ID)
+		if coins == "" {
+			ret = fmt.Sprintf("%s doesn't have a single coin yet.", user[0].Username)
+		} else {
+			ret = fmt.Sprintf("%s has %v coins", user[0].Username, coins)
+		}
+
+	}
+	ds.ChannelMessageSend(dm.ChannelID, ret)
+}

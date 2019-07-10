@@ -44,6 +44,7 @@ func init() {
 		username text,
 		xp int,
 		level int,
+		coins int,
 		PRIMARY KEY (userid)  
 	  )`
 	_, err = db.Exec(sqlStatement)
@@ -68,9 +69,9 @@ func init() {
 func CreateUser(userid, username string) {
 	sqlStatement := `
 	INSERT INTO users 
-	(userid, username, xp, level) 
-	VALUES ($1, $2, $3, $4)`
-	_, err := db.Exec(sqlStatement, userid, username, 0, 0)
+	(userid, username, xp, level, coins) 
+	VALUES ($1, $2, $3, $4, $5)`
+	_, err := db.Exec(sqlStatement, userid, username, 0, 0, 0)
 	if err != nil {
 		panic(err)
 	}
@@ -172,4 +173,22 @@ func AddGame(name ...string) {
 		}
 		fmt.Printf("Launching game: %v \n", k)
 	}
+}
+
+func AddCoins(userid string, coins int) {
+	_, err := db.Exec("UPDATE users SET coins = coins + $2 WHERE userid = $1", userid, coins)
+	if err != nil {
+		log.Fatal(err)
+	}
+}
+
+func GetCoins(userid string) string {
+	var coins string
+	result := db.QueryRow("SELECT coins from users where userid = $1", userid).Scan(&coins)
+	if result == sql.ErrNoRows {
+		fmt.Println("Found no user")
+	} else {
+		return coins
+	}
+	return ""
 }
