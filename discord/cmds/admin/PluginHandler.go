@@ -16,3 +16,12 @@ func AddPlugin(ds *discordgo.Session, dm *discordgo.Message, args []string) {
 	}
 	database.AddPluginToServer(dm.GuildID, i)
 }
+
+func RemovePlugin(ds *discordgo.Session, dm *discordgo.Message, args []string) {
+	i, err := strconv.Atoi(args[0])
+	fmt.Println(i)
+	if err != nil {
+		fmt.Println(err)
+	}
+	database.RemovePlugin(dm.GuildID, i)
+}

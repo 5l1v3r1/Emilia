@@ -32,6 +32,7 @@ func main() {
 	Router.RegisterCommand("leaderboard", utils.Leadboard, 11)
 
 	Router.RegisterCommand("addPlugin", admin.AddPlugin, 12)
+	Router.RegisterCommand("removePlugin", admin.RemovePlugin, 13)
 	database.AddGame("rps", "coinflip")
 
 	dg, err := discordgo.New("Bot " + os.Getenv("goDiscord"))
