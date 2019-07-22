@@ -18,20 +18,20 @@ import (
 
 func main() {
 	var Router = cmds.New()
-	Router.RegisterCommand("reverse", fun.Reverse)
-	Router.RegisterCommand("choose", utils.Choose)
-	Router.RegisterCommand("urban", fun.Urban)
-	Router.RegisterCommand("date", utils.Date)
-	Router.RegisterCommand("ping", cmds.Ping)
-	Router.RegisterCommand("rps", games.Rps)
-	Router.RegisterCommand("getxp", cmds.GetXP)
-	Router.RegisterCommand("lvl", cmds.GetLevel)
-	Router.RegisterCommand("coins", cmds.GetCoins)
+	Router.RegisterCommand("reverse", fun.Reverse, 1)
+	Router.RegisterCommand("choose", utils.Choose, 2)
+	Router.RegisterCommand("urban", fun.Urban, 3)
+	Router.RegisterCommand("date", utils.Date, 4)
+	Router.RegisterCommand("ping", cmds.Ping, 5)
+	Router.RegisterCommand("rps", games.Rps, 6)
+	Router.RegisterCommand("getxp", cmds.GetXP, 7)
+	Router.RegisterCommand("lvl", cmds.GetLevel, 8)
+	Router.RegisterCommand("coins", cmds.GetCoins, 9)
 
-	Router.RegisterCommand("coinflip", games.Coinflip)
-	Router.RegisterCommand("leaderboard", utils.Leadboard)
+	Router.RegisterCommand("coinflip", games.Coinflip, 10)
+	Router.RegisterCommand("leaderboard", utils.Leadboard, 11)
 
-	Router.RegisterCommand("addPlugin", admin.AddPlugin)
+	Router.RegisterCommand("addPlugin", admin.AddPlugin, 12)
 	database.AddGame("rps", "coinflip")
 
 	dg, err := discordgo.New("Bot " + os.Getenv("goDiscord"))

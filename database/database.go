@@ -275,3 +275,15 @@ func isPluginValid(serverID string, pluginID int) bool {
 	fmt.Println("return false")
 	return false
 }
+
+//GetPluginsForGuild returns all plugins for a specific guild
+func GetPluginsForGuild(serverID string) []int64 {
+	var plugins pq.Int64Array
+	result := db.QueryRow("SELECT plugins FROM plugins WHERE serverid = $1", serverID).Scan(&plugins)
+	if result == sql.ErrNoRows {
+		fmt.Println("Found no plugins")
+	} else {
+		return plugins
+	}
+	return nil
+}

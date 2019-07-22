@@ -4,9 +4,11 @@ import (
 	"strings"
 
 	"github.com/bwmarrin/discordgo"
+	"github.com/mxrk/Emilia/database"
 )
 
 type Command struct {
+	ID  int
 	Cmd string
 	Run HandlerFunc
 }
@@ -28,6 +30,7 @@ func New() *Commands {
 
 // messages -> commands
 func (c *Commands) OnMessageC(s *discordgo.Session, mc *discordgo.MessageCreate) {
+	//t1 := time.Now()
 	msg := mc.Message
 	content := msg.Content
 	prefix := c.Prefix
@@ -43,9 +46,7 @@ func (c *Commands) OnMessageC(s *discordgo.Session, mc *discordgo.MessageCreate)
 
 		// Trim prefix
 		content = strings.TrimPrefix(content, prefix)
-		//fields := strings.Fields(content)
-		//fmt.Println("3:", fields)
-		//	fmt.Println(fields)
+
 		_ = guild
 		_ = author
 
@@ -54,29 +55,32 @@ func (c *Commands) OnMessageC(s *discordgo.Session, mc *discordgo.MessageCreate)
 		cmd := split[0]
 		args := split[1:]
 
-		// for _, fv := range fields {
-		// 	fmt.Println(fk, fv)
+		plugins := database.GetPluginsForGuild(mc.GuildID)
 		for _, rv := range c.Routes {
 			if rv.Cmd == cmd {
-				rv.Run(s, mc.Message, args)
+				id := int64(rv.ID)
+				for _, i := range plugins {
+					if id == i {
+
+						rv.Run(s, mc.Message, args)
+						// t2 := time.Now()
+						// diff := t2.Sub(t1)
+						// fmt.Println(diff)
+						return
+					}
+				}
+				s.ChannelMessageSend(mc.ChannelID, "Not available on your guild. Please activate it.")
 			}
-			//	fmt.Println("Range - Routes")
-			//fmt.Println(*rv)
-			//
-
-			//}
-
 		}
-
 	}
-
 }
 
 // register commands
-func (c *Commands) RegisterCommand(cmd string, f HandlerFunc) (*Command, error) {
+func (c *Commands) RegisterCommand(cmd string, f HandlerFunc, id int) (*Command, error) {
 	m := Command{}
 	m.Cmd = cmd
 	m.Run = f
+	m.ID = id
 	c.Routes = append(c.Routes, &m)
 	return &m, nil
 }
