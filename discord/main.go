@@ -31,8 +31,8 @@ func main() {
 	Router.RegisterCommand("coinflip", games.Coinflip, 10)
 	Router.RegisterCommand("leaderboard", utils.Leadboard, 11)
 
-	Router.RegisterCommand("addPlugin", admin.AddPlugin, 12)
-	Router.RegisterCommand("removePlugin", admin.RemovePlugin, 13)
+	Router.RegisterCommand("addPlugin", admin.AddPlugin, 1)
+	Router.RegisterCommand("removePlugin", admin.RemovePlugin, 1)
 	database.AddGame("rps", "coinflip")
 
 	dg, err := discordgo.New("Bot " + os.Getenv("goDiscord"))

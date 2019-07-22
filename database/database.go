@@ -287,3 +287,13 @@ func GetPluginsForGuild(serverID string) []int64 {
 	}
 	return nil
 }
+
+func RemovePlugin(serverID string, pluginID int) {
+	if isPluginValid(serverID, pluginID) {
+		_, err := db.Exec("UPDATE plugins SET plugins = array_remove(plugins, $1) WHERE serverid = $2", pluginID, serverID)
+
+		if err != nil {
+			log.Fatal(err)
+		}
+	}
+}

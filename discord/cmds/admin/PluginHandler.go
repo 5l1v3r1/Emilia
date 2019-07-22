@@ -15,6 +15,8 @@ func AddPlugin(ds *discordgo.Session, dm *discordgo.Message, args []string) {
 		fmt.Println(err)
 	}
 	database.AddPluginToServer(dm.GuildID, i)
+	s := fmt.Sprintf("Added plugin %d. Now your guild is allowed to use it.", i)
+	ds.ChannelMessageSend(dm.ChannelID, s)
 }
 
 func RemovePlugin(ds *discordgo.Session, dm *discordgo.Message, args []string) {
@@ -23,5 +25,11 @@ func RemovePlugin(ds *discordgo.Session, dm *discordgo.Message, args []string) {
 	if err != nil {
 		fmt.Println(err)
 	}
+	if i == 1 {
+		//not possible to remove admin commands
+		return
+	}
 	database.RemovePlugin(dm.GuildID, i)
+	s := fmt.Sprintf("Removed plugin %d. Now your guild isn't allowed to use it anymore.", i)
+	ds.ChannelMessageSend(dm.ChannelID, s)
 }
