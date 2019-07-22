@@ -8,7 +8,19 @@ import (
 )
 
 func GetXP(ds *discordgo.Session, dm *discordgo.Message, content []string) {
-	ret := fmt.Sprintf("XP for %s: %v", dm.Author.Username, database.ReturnXP(dm.Author.ID))
+	user := dm.Mentions
+	var ret string
+	if len(user) == 0 {
+		ret = fmt.Sprintf("You have %v xp.", database.ReturnXP(dm.Author.ID))
+	} else {
+		xp := database.ReturnXP(user[0].ID)
+		if xp == "" {
+			ret = fmt.Sprintf("%s doesn't have experience points.", user[0].Username)
+		} else {
+			ret = fmt.Sprintf("%s has %v xp", user[0].Username, xp)
+		}
+
+	}
 	ds.ChannelMessageSend(dm.ChannelID, ret)
 }
 

@@ -8,6 +8,7 @@ import (
 
 	"github.com/mxrk/Emilia/database"
 	"github.com/mxrk/Emilia/discord/cmds"
+	"github.com/mxrk/Emilia/discord/cmds/admin"
 	"github.com/mxrk/Emilia/discord/cmds/fun"
 	"github.com/mxrk/Emilia/discord/cmds/games"
 	"github.com/mxrk/Emilia/discord/cmds/utils"
@@ -28,7 +29,9 @@ func main() {
 	Router.RegisterCommand("coins", cmds.GetCoins)
 
 	Router.RegisterCommand("coinflip", games.Coinflip)
+	Router.RegisterCommand("leaderboard", utils.Leadboard)
 
+	Router.RegisterCommand("addPlugin", admin.AddPlugin)
 	database.AddGame("rps", "coinflip")
 
 	dg, err := discordgo.New("Bot " + os.Getenv("goDiscord"))
