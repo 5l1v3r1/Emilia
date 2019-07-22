@@ -8,6 +8,7 @@ import (
 	"time"
 
 	// Postgres import
+	"github.com/lib/pq"
 	_ "github.com/lib/pq"
 )
 
@@ -56,6 +57,17 @@ func init() {
 		name text,
 		count int,
 		PRIMARY KEY (name)  
+	  )`
+	_, err = db.Exec(sqlStatement)
+	if err != nil {
+		panic(err)
+	}
+
+	sqlStatement = `CREATE TABLE IF NOT EXISTS plugins (
+		id SERIAL,
+		serverid text,
+		plugins int [],
+		PRIMARY KEY (serverid)  
 	  )`
 	_, err = db.Exec(sqlStatement)
 	if err != nil {
@@ -129,6 +141,16 @@ func Level() {
 			if err != nil {
 				log.Fatal(err)
 			}
+		} else if xp > 20 && xp < 30 {
+			_, err = db.Exec("UPDATE users SET level = 3 WHERE userid = $1", userid)
+			if err != nil {
+				log.Fatal(err)
+			}
+		} else if xp > 30 && xp < 40 {
+			_, err = db.Exec("UPDATE users SET level = 4 WHERE userid = $1", userid)
+			if err != nil {
+				log.Fatal(err)
+			}
 		}
 	}
 	elapsed := time.Since(start)
@@ -191,4 +213,65 @@ func GetCoins(userid string) string {
 		return coins
 	}
 	return ""
+}
+
+type UserLB struct {
+	Level  int
+	Coins  int
+	Userid string
+}
+
+// missing server parameter
+func Leaderboard() []UserLB {
+	var (
+		level  int
+		coins  int
+		userid string
+	)
+	slice := []UserLB{}
+	//where server...
+	rows, err := db.Query("SELECT level, coins, userid FROM users ORDER BY level desc, coins desc")
+	if err != nil {
+		log.Fatal(err)
+	}
+	defer rows.Close()
+	for rows.Next() {
+		err := rows.Scan(&level, &coins, &userid)
+		if err != nil {
+			log.Fatal(err)
+		}
+		slice = append(slice, UserLB{Level: level, Coins: coins, Userid: userid})
+	}
+	return slice
+}
+
+func AddPluginToServer(serverID string, pluginID int) {
+
+	if !isPluginValid(serverID, pluginID) {
+		fmt.Println(pluginID)
+		_, err := db.Exec("UPDATE plugins SET plugins = array_append(plugins, $1) WHERE serverid = $2", pluginID, serverID)
+
+		if err != nil {
+			log.Fatal(err)
+		}
+		fmt.Println("Added plugin")
+	}
+}
+
+func isPluginValid(serverID string, pluginID int) bool {
+	var plugins pq.Int64Array
+	result := db.QueryRow("SELECT plugins FROM plugins WHERE serverid = $1", serverID).Scan(&plugins)
+	if result == sql.ErrNoRows {
+		fmt.Println("Found no plugins")
+	} else {
+		m := int64(pluginID)
+		for _, i := range plugins {
+			if m == i {
+				fmt.Println("found plugin")
+				return true
+			}
+		}
+	}
+	fmt.Println("return false")
+	return false
 }
