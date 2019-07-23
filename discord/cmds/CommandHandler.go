@@ -30,7 +30,7 @@ func New() *Commands {
 
 // messages -> commands
 func (c *Commands) OnMessageC(s *discordgo.Session, mc *discordgo.MessageCreate) {
-	//t1 := time.Now()
+
 	msg := mc.Message
 	content := msg.Content
 	prefix := c.Prefix
@@ -40,36 +40,34 @@ func (c *Commands) OnMessageC(s *discordgo.Session, mc *discordgo.MessageCreate)
 	}
 
 	if strings.HasPrefix(content, prefix) {
-		channel, _ := s.Channel(msg.ChannelID)
-		guild, _ := s.Guild(channel.GuildID)
-		author := msg.Author
+
+		//not needed at the moment
+		//channel, _ := s.Channel(msg.ChannelID)
+		// guild, _ := s.Guild(channel.GuildID)
+		// author := msg.Author
 
 		// Trim prefix
 		content = strings.TrimPrefix(content, prefix)
 
-		_ = guild
-		_ = author
+		// _ = guild
+		// _ = author
 
 		//	content = fields[0][len(prefix):]
 		split := strings.Split(content, " ")
 		cmd := split[0]
 		args := split[1:]
 
-		plugins := database.GetPluginsForGuild(mc.GuildID)
 		for _, rv := range c.Routes {
 			if rv.Cmd == cmd {
-				id := int64(rv.ID)
-				for _, i := range plugins {
-					if id == i {
+				plugin := database.GetPluginForGuild(mc.GuildID, rv.ID)
 
-						rv.Run(s, mc.Message, args)
-						// t2 := time.Now()
-						// diff := t2.Sub(t1)
-						// fmt.Println(diff)
-						return
-					}
+				if plugin == -1 {
+					s.ChannelMessageSend(mc.ChannelID, "Not available on your guild. Please activate it.")
+					return
 				}
-				s.ChannelMessageSend(mc.ChannelID, "Not available on your guild. Please activate it.")
+				go rv.Run(s, mc.Message, args)
+				return
+
 			}
 		}
 	}
