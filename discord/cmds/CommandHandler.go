@@ -57,8 +57,13 @@ func (c *Commands) OnMessageC(s *discordgo.Session, mc *discordgo.MessageCreate)
 		cmd := split[0]
 		args := split[1:]
 
+		if !database.IsGuildInDataBase(mc.GuildID) {
+			database.InitGuild(mc.GuildID)
+		}
+
 		for _, rv := range c.Routes {
 			if rv.Cmd == cmd {
+
 				plugin := database.GetPluginForGuild(mc.GuildID, rv.ID)
 
 				if plugin == -1 {

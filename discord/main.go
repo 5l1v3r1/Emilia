@@ -18,21 +18,25 @@ import (
 
 func main() {
 	var Router = cmds.New()
-	Router.RegisterCommand("reverse", fun.Reverse, 1)
-	Router.RegisterCommand("choose", utils.Choose, 2)
+	Router.RegisterCommand("reverse", fun.Reverse, 2)
 	Router.RegisterCommand("urban", fun.Urban, 3)
-	Router.RegisterCommand("date", utils.Date, 4)
-	Router.RegisterCommand("ping", cmds.Ping, 5)
-	Router.RegisterCommand("rps", games.Rps, 6)
+
+	Router.RegisterCommand("choose", utils.Choose, 4)
+	Router.RegisterCommand("date", utils.Date, 5)
+	Router.RegisterCommand("leaderboard", utils.Leadboard, 6)
+
+	Router.RegisterCommand("ping", cmds.Ping, 6)
 	Router.RegisterCommand("getxp", cmds.GetXP, 7)
 	Router.RegisterCommand("lvl", cmds.GetLevel, 8)
 	Router.RegisterCommand("coins", cmds.GetCoins, 9)
 
-	Router.RegisterCommand("coinflip", games.Coinflip, 10)
-	Router.RegisterCommand("leaderboard", utils.Leadboard, 11)
+	Router.RegisterCommand("rps", games.Rps, 10)
+	Router.RegisterCommand("coinflip", games.Coinflip, 11)
 
 	Router.RegisterCommand("addPlugin", admin.AddPlugin, 1)
 	Router.RegisterCommand("removePlugin", admin.RemovePlugin, 1)
+	Router.RegisterCommand("addLog", admin.AddLogChannel, 1)
+	Router.RegisterCommand("removeLog", admin.RemoveLogChannel, 1)
 	database.AddGame("rps", "coinflip")
 
 	dg, err := discordgo.New("Bot " + os.Getenv("goDiscord"))
