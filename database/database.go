@@ -346,10 +346,10 @@ func GetLogChannel(guildID string) string {
 func InitGuild(guildID string) {
 	sqlStatement := `
 	INSERT INTO servers 
-	(serverid, plugins, logchannel)
-	VALUES ($1, $2, $3)`
+	(serverid, plugins, logchannel, prefix)
+	VALUES ($1, $2, $3, $4)`
 	ar := []int{1}
-	_, err := db.Exec(sqlStatement, guildID, pq.Array(ar), "")
+	_, err := db.Exec(sqlStatement, guildID, pq.Array(ar), "", "!")
 	if err != nil {
 		fmt.Println(err)
 	}
@@ -362,5 +362,23 @@ func IsGuildInDataBase(guildID string) bool {
 		return false
 	} else {
 		return true
+	}
+}
+
+func GetGuildPrefix(guildID string) string {
+	var prefix string
+	result := db.QueryRow("SELECT prefix FROM servers WHERE serverid = $1", guildID).Scan(&prefix)
+	if result == sql.ErrNoRows {
+		fmt.Println("Found no log")
+		return ""
+	} else {
+		return prefix
+	}
+}
+
+func ChangePrefix(guildID, newPrefix string) {
+	_, err := db.Exec("UPDATE servers SET prefix =  $1 WHERE serverid = $2", newPrefix, guildID)
+	if err != nil {
+		log.Fatal(err)
 	}
 }
