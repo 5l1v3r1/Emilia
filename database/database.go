@@ -76,6 +76,20 @@ func init() {
 		panic(err)
 	}
 
+	sqlStatement = `CREATE TABLE IF NOT EXISTS reports (
+		id SERIAL,
+		serverid text,
+		type int,
+		victim text,
+		mod text,
+		msg text,
+		PRIMARY KEY (id)  
+	  )`
+	_, err = db.Exec(sqlStatement)
+	if err != nil {
+		panic(err)
+	}
+
 	go Level()
 }
 
@@ -381,4 +395,54 @@ func ChangePrefix(guildID, newPrefix string) {
 	if err != nil {
 		log.Fatal(err)
 	}
+}
+
+func AddReport(guildID, victim, mod, msg string, ReportType int) int {
+	sqlStatement := `
+	INSERT INTO reports 
+	(serverid, type, victim, mod, msg)
+	VALUES ($1, $2, $3, $4, $5)
+	RETURNING id`
+	var id int
+	err := db.QueryRow(sqlStatement, guildID, ReportType, victim, mod, msg).Scan(&id)
+	if err != nil {
+		fmt.Println(err)
+	}
+	return id
+}
+
+func DeleteReport(id int) {
+	sqlStatement := `
+	DELETE FROM reports
+	WHERE id = $1;`
+	_, err := db.Exec(sqlStatement, id)
+	if err != nil {
+		fmt.Println(err)
+	}
+}
+
+type Report struct {
+	ID         int
+	ReportType int
+	Victim     string
+	Mod        string
+	Msg        string
+}
+
+func GetReports(guild, victim string) []Report {
+	var rep Report
+	slice := []Report{}
+	rows, err := db.Query("SELECT id, type, victim, mod, msg FROM reports WHERE serverid = $1 AND victim = $2", guild, victim)
+	if err != nil {
+		log.Fatal(err)
+	}
+	defer rows.Close()
+	for rows.Next() {
+		err := rows.Scan(&rep.ID, &rep.ReportType, &rep.Victim, &rep.Mod, &rep.Msg)
+		if err != nil {
+			log.Fatal(err)
+		}
+		slice = append(slice, rep)
+	}
+	return slice
 }

@@ -37,6 +37,9 @@ func main() {
 	Router.RegisterCommand("removePlugin", admin.RemovePlugin, 1)
 	Router.RegisterCommand("addLog", admin.AddLogChannel, 1)
 	Router.RegisterCommand("removeLog", admin.RemoveLogChannel, 1)
+	Router.RegisterCommand("changePrefix", admin.ChangePrefix, 1)
+	Router.RegisterCommand("rep", admin.ReportPerson, 1)
+	Router.RegisterCommand("reps", admin.Reports, 1)
 	database.AddGame("rps", "coinflip")
 
 	dg, err := discordgo.New("Bot " + os.Getenv("goDiscord"))
