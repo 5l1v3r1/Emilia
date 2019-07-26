@@ -14,6 +14,7 @@ func AddPlugin(ds *discordgo.Session, dm *discordgo.Message, args []string) {
 	if err != nil {
 		fmt.Println(err)
 	}
+	//TODO check if plugin id is valid
 	database.AddPluginToServer(dm.GuildID, i)
 	s := fmt.Sprintf("Added plugin %d. Now your guild is allowed to use it.", i)
 	ds.ChannelMessageSend(dm.ChannelID, s)

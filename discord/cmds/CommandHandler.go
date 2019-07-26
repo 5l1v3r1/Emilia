@@ -33,7 +33,7 @@ func (c *Commands) OnMessageC(s *discordgo.Session, mc *discordgo.MessageCreate)
 
 	msg := mc.Message
 	content := msg.Content
-	prefix := c.Prefix
+	prefix := database.GetGuildPrefix(mc.GuildID)
 
 	if mc.Author.ID == s.State.User.ID {
 		return
