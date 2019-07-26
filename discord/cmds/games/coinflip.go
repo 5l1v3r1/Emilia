@@ -5,6 +5,7 @@ import (
 	"strings"
 
 	"github.com/bwmarrin/discordgo"
+	"github.com/mxrk/Emilia/database"
 )
 
 func Coinflip(ds *discordgo.Session, dm *discordgo.Message, args []string) {
@@ -19,7 +20,10 @@ func Coinflip(ds *discordgo.Session, dm *discordgo.Message, args []string) {
 	if PlayerChoice == "tails" || PlayerChoice == "heads" {
 		ai := answers[n]
 		if PlayerChoice == ai {
-			ds.ChannelMessageSend(dm.ChannelID, "You won")
+			ret := "You won! Gratulations. Added 50 coins to your wallet."
+			ds.ChannelMessageSend(dm.ChannelID, ret)
+			database.AddCoins(dm.Author.ID, 50)
+
 		} else {
 			ds.ChannelMessageSend(dm.ChannelID, "You lost")
 		}

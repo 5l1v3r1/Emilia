@@ -4,9 +4,11 @@ import (
 	"strings"
 
 	"github.com/bwmarrin/discordgo"
+	"github.com/mxrk/Emilia/database"
 )
 
 type Command struct {
+	ID  int
 	Cmd string
 	Run HandlerFunc
 }
@@ -28,6 +30,7 @@ func New() *Commands {
 
 // messages -> commands
 func (c *Commands) OnMessageC(s *discordgo.Session, mc *discordgo.MessageCreate) {
+
 	msg := mc.Message
 	content := msg.Content
 	prefix := c.Prefix
@@ -37,46 +40,50 @@ func (c *Commands) OnMessageC(s *discordgo.Session, mc *discordgo.MessageCreate)
 	}
 
 	if strings.HasPrefix(content, prefix) {
-		channel, _ := s.Channel(msg.ChannelID)
-		guild, _ := s.Guild(channel.GuildID)
-		author := msg.Author
+
+		//not needed at the moment
+		//channel, _ := s.Channel(msg.ChannelID)
+		// guild, _ := s.Guild(channel.GuildID)
+		// author := msg.Author
 
 		// Trim prefix
 		content = strings.TrimPrefix(content, prefix)
-		//fields := strings.Fields(content)
-		//fmt.Println("3:", fields)
-		//	fmt.Println(fields)
-		_ = guild
-		_ = author
+
+		// _ = guild
+		// _ = author
 
 		//	content = fields[0][len(prefix):]
 		split := strings.Split(content, " ")
 		cmd := split[0]
 		args := split[1:]
 
-		// for _, fv := range fields {
-		// 	fmt.Println(fk, fv)
-		for _, rv := range c.Routes {
-			if rv.Cmd == cmd {
-				rv.Run(s, mc.Message, args)
-			}
-			//	fmt.Println("Range - Routes")
-			//fmt.Println(*rv)
-			//
-
-			//}
-
+		if !database.IsGuildInDataBase(mc.GuildID) {
+			database.InitGuild(mc.GuildID)
 		}
 
-	}
+		for _, rv := range c.Routes {
+			if rv.Cmd == cmd {
 
+				plugin := database.GetPluginForGuild(mc.GuildID, rv.ID)
+
+				if plugin == -1 {
+					s.ChannelMessageSend(mc.ChannelID, "Not available on your guild. Please activate it.")
+					return
+				}
+				go rv.Run(s, mc.Message, args)
+				return
+
+			}
+		}
+	}
 }
 
 // register commands
-func (c *Commands) RegisterCommand(cmd string, f HandlerFunc) (*Command, error) {
+func (c *Commands) RegisterCommand(cmd string, f HandlerFunc, id int) (*Command, error) {
 	m := Command{}
 	m.Cmd = cmd
 	m.Run = f
+	m.ID = id
 	c.Routes = append(c.Routes, &m)
 	return &m, nil
 }
