@@ -63,10 +63,12 @@ func init() {
 		panic(err)
 	}
 
-	sqlStatement = `CREATE TABLE IF NOT EXISTS plugins (
+	sqlStatement = `CREATE TABLE IF NOT EXISTS servers (
 		id SERIAL,
 		serverid text,
 		plugins int [],
+		logchannel text,
+		prefix text,
 		PRIMARY KEY (serverid)  
 	  )`
 	_, err = db.Exec(sqlStatement)
@@ -249,7 +251,7 @@ func AddPluginToServer(serverID string, pluginID int) {
 
 	if !isPluginValid(serverID, pluginID) {
 		fmt.Println(pluginID)
-		_, err := db.Exec("UPDATE plugins SET plugins = array_append(plugins, $1) WHERE serverid = $2", pluginID, serverID)
+		_, err := db.Exec("UPDATE servers SET plugins = array_append(plugins, $1) WHERE serverid = $2", pluginID, serverID)
 
 		if err != nil {
 			log.Fatal(err)
@@ -260,7 +262,7 @@ func AddPluginToServer(serverID string, pluginID int) {
 
 func isPluginValid(serverID string, pluginID int) bool {
 	var plugins pq.Int64Array
-	result := db.QueryRow("SELECT plugins FROM plugins WHERE serverid = $1", serverID).Scan(&plugins)
+	result := db.QueryRow("SELECT plugins FROM servers WHERE serverid = $1", serverID).Scan(&plugins)
 	if result == sql.ErrNoRows {
 		fmt.Println("Found no plugins")
 	} else {
@@ -279,7 +281,7 @@ func isPluginValid(serverID string, pluginID int) bool {
 //GetPluginsForGuild returns all plugins for a specific guild
 func GetPluginsForGuild(serverID string) []int64 {
 	var plugins pq.Int64Array
-	result := db.QueryRow("SELECT plugins FROM plugins WHERE serverid = $1", serverID).Scan(&plugins)
+	result := db.QueryRow("SELECT plugins FROM servers WHERE serverid = $1", serverID).Scan(&plugins)
 	if result == sql.ErrNoRows {
 		fmt.Println("Found no plugins")
 	} else {
@@ -290,10 +292,75 @@ func GetPluginsForGuild(serverID string) []int64 {
 
 func RemovePlugin(serverID string, pluginID int) {
 	if isPluginValid(serverID, pluginID) {
-		_, err := db.Exec("UPDATE plugins SET plugins = array_remove(plugins, $1) WHERE serverid = $2", pluginID, serverID)
+		_, err := db.Exec("UPDATE servers SET plugins = array_remove(plugins, $1) WHERE serverid = $2", pluginID, serverID)
 
 		if err != nil {
 			log.Fatal(err)
 		}
+	}
+}
+
+func GetPluginForGuild(serverID string, pluginID int) int {
+	var plugin int
+	result := db.QueryRow("SELECT id FROM servers WHERE serverid = $1 AND $2 = ANY(plugins)", serverID, pluginID).Scan(&plugin)
+	if result == sql.ErrNoRows {
+		fmt.Println("Found no plugin")
+		return -1
+	} else {
+		return plugin
+	}
+}
+
+func AddLogChannel(guildID, channel string) {
+	_, err := db.Exec("UPDATE servers SET logchannel = $1 WHERE serverid = $2", channel, guildID)
+	if err != nil {
+		log.Fatal(err)
+	}
+}
+
+func ReplaceLogChannel(guildID, channel string) {
+	_, err := db.Exec("UPDATE servers SET logchannel = $1 WHERE serverid = $2", channel, guildID)
+	if err != nil {
+		log.Fatal(err)
+	}
+}
+
+func RemoveLogChannel(guildID string) {
+	_, err := db.Exec("UPDATE servers SET logchannel =  NULL WHERE serverid = $1", guildID)
+	if err != nil {
+		log.Fatal(err)
+	}
+}
+
+func GetLogChannel(guildID string) string {
+	var logChannel string
+	result := db.QueryRow("SELECT logchannel FROM servers WHERE serverid = $1", guildID).Scan(&logChannel)
+	if result == sql.ErrNoRows {
+		fmt.Println("Found no log")
+		return ""
+	} else {
+		return logChannel
+	}
+}
+
+func InitGuild(guildID string) {
+	sqlStatement := `
+	INSERT INTO servers 
+	(serverid, plugins, logchannel)
+	VALUES ($1, $2, $3)`
+	ar := []int{1}
+	_, err := db.Exec(sqlStatement, guildID, pq.Array(ar), "")
+	if err != nil {
+		fmt.Println(err)
+	}
+}
+
+func IsGuildInDataBase(guildID string) bool {
+	result := db.QueryRow("SELECT id FROM servers WHERE serverid = $1", guildID).Scan()
+	if result == sql.ErrNoRows {
+		fmt.Println("Found no log")
+		return false
+	} else {
+		return true
 	}
 }
