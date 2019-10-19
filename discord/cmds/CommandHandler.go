@@ -1,6 +1,7 @@
 package cmds
 
 import (
+	"fmt"
 	"strings"
 
 	"github.com/bwmarrin/discordgo"
@@ -11,6 +12,8 @@ type Command struct {
 	ID  int
 	Cmd string
 	Run HandlerFunc
+	// using  discordgo.PermissionAdministrator
+	Permissions int
 }
 
 type Commands struct {
@@ -21,14 +24,14 @@ type Commands struct {
 // handler signature
 type HandlerFunc func(*discordgo.Session, *discordgo.Message, []string)
 
-// create route
+// New will create a new command.
 func New() *Commands {
 	c := &Commands{}
 	c.Prefix = "!"
 	return c
 }
 
-// messages -> commands
+// OnMessageC is the main command handler. It will match the message to the correct command.
 func (c *Commands) OnMessageC(s *discordgo.Session, mc *discordgo.MessageCreate) {
 
 	msg := mc.Message
@@ -63,27 +66,52 @@ func (c *Commands) OnMessageC(s *discordgo.Session, mc *discordgo.MessageCreate)
 
 		for _, rv := range c.Routes {
 			if rv.Cmd == cmd {
+				check, err := checkPerms(s, mc.GuildID, mc.Author.ID, rv.Permissions)
+				if err != nil {
+					fmt.Println(err)
+				}
+				if check {
+					plugin := database.GetPluginForGuild(mc.GuildID, rv.ID)
 
-				plugin := database.GetPluginForGuild(mc.GuildID, rv.ID)
-
-				if plugin == -1 {
-					s.ChannelMessageSend(mc.ChannelID, "Not available on your guild. Please activate it.")
+					if plugin == -1 {
+						s.ChannelMessageSend(mc.ChannelID, "Not available on your guild. Please activate it.")
+						return
+					}
+					go rv.Run(s, mc.Message, args)
 					return
 				}
-				go rv.Run(s, mc.Message, args)
-				return
-
 			}
 		}
 	}
 }
 
-// register commands
-func (c *Commands) RegisterCommand(cmd string, f HandlerFunc, id int) (*Command, error) {
+// RegisterCommand can register commands.
+func (c *Commands) RegisterCommand(cmd string, f HandlerFunc, id int, Permissions int) (*Command, error) {
 	m := Command{}
 	m.Cmd = cmd
 	m.Run = f
 	m.ID = id
+	m.Permissions = Permissions
 	c.Routes = append(c.Routes, &m)
 	return &m, nil
+}
+
+//check if the user has enough permissions
+func checkPerms(s *discordgo.Session, guildID string, userID string, permission int) (bool, error) {
+	member, err := s.State.Member(guildID, userID)
+	if err != nil {
+		if member, err = s.GuildMember(guildID, userID); err != nil {
+			return false, err
+		}
+	}
+	for _, roleID := range member.Roles {
+		role, err := s.State.Role(guildID, roleID)
+		if err != nil {
+			return false, err
+		}
+		if role.Permissions&permission != 0 {
+			return true, nil
+		}
+	}
+	return false, nil
 }
