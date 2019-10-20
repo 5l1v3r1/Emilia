@@ -9,7 +9,7 @@ import (
 
 	// Postgres import
 	"github.com/lib/pq"
-	_ "github.com/lib/pq"
+	_ "github.com/lib/pq" // Postgres
 )
 
 const (
@@ -93,7 +93,7 @@ func init() {
 	go Level()
 }
 
-// CreateUser ...
+// CreateUser creates an user in the database.
 func CreateUser(userid, username string) {
 	sqlStatement := `
 	INSERT INTO users 
@@ -106,7 +106,7 @@ func CreateUser(userid, username string) {
 	fmt.Printf("Created user %v \n", userid)
 }
 
-// UpdateUserXP ...
+// UpdateUserXP updates the xp for a certain user.
 func UpdateUserXP(userid string) {
 	sqlStatement := `
 	UPDATE users
@@ -118,7 +118,7 @@ func UpdateUserXP(userid string) {
 	}
 }
 
-// CheckUser ...
+// CheckUser check if a user exists. If not, it will create the user with CreateUser(...).
 func CheckUser(userid, username string) {
 	var id string
 	result := db.QueryRow("SELECT userid from users where userid = $1", userid).Scan(&id)
@@ -187,6 +187,7 @@ func ReturnXP(userid string) string {
 	return ""
 }
 
+// GetLevel returns the level of a certain user.
 func GetLevel(userid string) string {
 	var level string
 	result := db.QueryRow("SELECT level from users where userid = $1", userid).Scan(&level)
@@ -198,7 +199,7 @@ func GetLevel(userid string) string {
 	return ""
 }
 
-// AddGame ...
+// AddGame adds a game to the database.
 func AddGame(name ...string) {
 	for _, k := range name {
 		sqlStatement := `
@@ -213,6 +214,7 @@ func AddGame(name ...string) {
 	}
 }
 
+// AddCoins add a certain amount of coins to an user.
 func AddCoins(userid string, coins int) {
 	_, err := db.Exec("UPDATE users SET coins = coins + $2 WHERE userid = $1", userid, coins)
 	if err != nil {
@@ -220,6 +222,7 @@ func AddCoins(userid string, coins int) {
 	}
 }
 
+// GetCoins returns the coins of a certain user.
 func GetCoins(userid string) string {
 	var coins string
 	result := db.QueryRow("SELECT coins from users where userid = $1", userid).Scan(&coins)
@@ -231,13 +234,14 @@ func GetCoins(userid string) string {
 	return ""
 }
 
+// UserLB represents an user in the leadboard.
 type UserLB struct {
 	Level  int
 	Coins  int
 	Userid string
 }
 
-// missing server parameter
+// Leaderboard returns a slice of users for the leaderboard.
 func Leaderboard() []UserLB {
 	var (
 		level  int
@@ -261,6 +265,7 @@ func Leaderboard() []UserLB {
 	return slice
 }
 
+// AddPluginToServer adds a plugin to a certain server.
 func AddPluginToServer(serverID string, pluginID int) {
 
 	if !isPluginValid(serverID, pluginID) {
@@ -274,6 +279,7 @@ func AddPluginToServer(serverID string, pluginID int) {
 	}
 }
 
+// checks if a plugin is on the given guild.
 func isPluginValid(serverID string, pluginID int) bool {
 	var plugins pq.Int64Array
 	result := db.QueryRow("SELECT plugins FROM servers WHERE serverid = $1", serverID).Scan(&plugins)
@@ -304,6 +310,7 @@ func GetPluginsForGuild(serverID string) []int64 {
 	return nil
 }
 
+// RemovePlugin can remove a plugin from a server.
 func RemovePlugin(serverID string, pluginID int) {
 	if isPluginValid(serverID, pluginID) {
 		_, err := db.Exec("UPDATE servers SET plugins = array_remove(plugins, $1) WHERE serverid = $2", pluginID, serverID)
@@ -314,17 +321,18 @@ func RemovePlugin(serverID string, pluginID int) {
 	}
 }
 
+// GetPluginForGuild returns the pluginID  for a given plugin on a guild.
 func GetPluginForGuild(serverID string, pluginID int) int {
 	var plugin int
 	result := db.QueryRow("SELECT id FROM servers WHERE serverid = $1 AND $2 = ANY(plugins)", serverID, pluginID).Scan(&plugin)
 	if result == sql.ErrNoRows {
 		fmt.Println("Found no plugin")
 		return -1
-	} else {
-		return plugin
 	}
+	return plugin
 }
 
+// AddLogChannel is used to add a logging channel to a server.
 func AddLogChannel(guildID, channel string) {
 	_, err := db.Exec("UPDATE servers SET logchannel = $1 WHERE serverid = $2", channel, guildID)
 	if err != nil {
@@ -332,6 +340,7 @@ func AddLogChannel(guildID, channel string) {
 	}
 }
 
+// ReplaceLogChannel is used to replace the old logging channel.
 func ReplaceLogChannel(guildID, channel string) {
 	_, err := db.Exec("UPDATE servers SET logchannel = $1 WHERE serverid = $2", channel, guildID)
 	if err != nil {
@@ -339,6 +348,7 @@ func ReplaceLogChannel(guildID, channel string) {
 	}
 }
 
+// RemoveLogChannel is used to remove a logging channel.
 func RemoveLogChannel(guildID string) {
 	_, err := db.Exec("UPDATE servers SET logchannel =  NULL WHERE serverid = $1", guildID)
 	if err != nil {
@@ -346,17 +356,18 @@ func RemoveLogChannel(guildID string) {
 	}
 }
 
+// GetLogChannel returns the current logging channel of a certain server.
 func GetLogChannel(guildID string) string {
 	var logChannel string
 	result := db.QueryRow("SELECT logchannel FROM servers WHERE serverid = $1", guildID).Scan(&logChannel)
 	if result == sql.ErrNoRows {
 		fmt.Println("Found no log")
 		return ""
-	} else {
-		return logChannel
 	}
+	return logChannel
 }
 
+// InitGuild adds a certain guild to the server list.
 func InitGuild(guildID string) {
 	sqlStatement := `
 	INSERT INTO servers 
@@ -369,27 +380,28 @@ func InitGuild(guildID string) {
 	}
 }
 
+// IsGuildInDataBase checks if the given guild is in the database.
 func IsGuildInDataBase(guildID string) bool {
 	result := db.QueryRow("SELECT id FROM servers WHERE serverid = $1", guildID).Scan()
 	if result == sql.ErrNoRows {
 		fmt.Println("Found no log")
 		return false
-	} else {
-		return true
 	}
+	return true
 }
 
+// GetGuildPrefix returns the prefix for the given guild.
 func GetGuildPrefix(guildID string) string {
 	var prefix string
 	result := db.QueryRow("SELECT prefix FROM servers WHERE serverid = $1", guildID).Scan(&prefix)
 	if result == sql.ErrNoRows {
 		fmt.Println("Found no log")
 		return ""
-	} else {
-		return prefix
 	}
+	return prefix
 }
 
+// ChangePrefix changes the current prefix to a new one.
 func ChangePrefix(guildID, newPrefix string) {
 	_, err := db.Exec("UPDATE servers SET prefix =  $1 WHERE serverid = $2", newPrefix, guildID)
 	if err != nil {
@@ -397,6 +409,7 @@ func ChangePrefix(guildID, newPrefix string) {
 	}
 }
 
+// AddReport adds a report to the reports table.
 func AddReport(guildID, victim, mod, msg string, ReportType int) int {
 	sqlStatement := `
 	INSERT INTO reports 
@@ -411,6 +424,7 @@ func AddReport(guildID, victim, mod, msg string, ReportType int) int {
 	return id
 }
 
+// DeleteReport removes a report from the reports table.
 func DeleteReport(id int) {
 	sqlStatement := `
 	DELETE FROM reports
@@ -421,6 +435,7 @@ func DeleteReport(id int) {
 	}
 }
 
+// Report struct for getting, adding and removing reports.
 type Report struct {
 	ID         int
 	ReportType int
@@ -429,6 +444,7 @@ type Report struct {
 	Msg        string
 }
 
+// GetReports returns a slice whith all reports for a certain guild and victim.
 func GetReports(guild, victim string) []Report {
 	var rep Report
 	slice := []Report{}
